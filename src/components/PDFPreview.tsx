@@ -1,5 +1,7 @@
 import { PDFFile } from '@/types/pdf';
 import { FileText } from 'lucide-react';
+import { PDFPageThumbnail } from './PDFPageThumbnail';
+import { useMemo } from 'react';
 
 interface PDFPreviewProps {
   files: PDFFile[];
@@ -7,6 +9,11 @@ interface PDFPreviewProps {
 
 export function PDFPreview({ files }: PDFPreviewProps) {
   const totalPages = files.reduce((sum, file) => sum + file.pageCount, 0);
+
+  // Create file URLs for preview
+  const fileUrls = useMemo(() => {
+    return files.map(file => URL.createObjectURL(file.file));
+  }, [files]);
 
   if (files.length === 0) {
     return (
@@ -29,12 +36,17 @@ export function PDFPreview({ files }: PDFPreviewProps) {
         </p>
       </div>
 
-      <div className="flex-1 bg-background/50 rounded-lg flex items-center justify-center">
-        <div className="text-center">
-          <FileText className="w-16 h-16 text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">
-            Ready to merge {totalPages} page{totalPages !== 1 ? 's' : ''}
-          </p>
+      <div className="flex-1 bg-background/50 rounded-lg overflow-y-auto p-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {files.map((file, fileIndex) => 
+            file.pages.map((page) => (
+              <PDFPageThumbnail
+                key={page.id}
+                fileUrl={fileUrls[fileIndex]}
+                page={page}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>

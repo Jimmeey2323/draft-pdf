@@ -84,7 +84,13 @@ const Index = () => {
     
     try {
       const mergedPdf = await mergePDFs(files, mergeSettings);
-      downloadPDF(mergedPdf, 'merged-document.pdf');
+      
+      // Generate filename based on uploaded documents
+      const filename = files.length === 1 
+        ? files[0].name.replace('.pdf', '-merged.pdf')
+        : `${files[0].name.replace('.pdf', '')}-and-${files.length - 1}-more-merged.pdf`;
+      
+      downloadPDF(mergedPdf, filename);
       
       toast({
         title: 'Success',
