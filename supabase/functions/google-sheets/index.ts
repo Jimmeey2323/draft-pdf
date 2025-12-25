@@ -53,11 +53,25 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const spreadsheetId = url.searchParams.get('spreadsheetId');
-    const range = url.searchParams.get('range');
-    const valueRenderOption = url.searchParams.get('valueRenderOption') || 'UNFORMATTED_VALUE';
-    const dateTimeRenderOption = url.searchParams.get('dateTimeRenderOption') || 'FORMATTED_STRING';
+    let spreadsheetId: string | null = null;
+    let range: string | null = null;
+    let valueRenderOption = 'UNFORMATTED_VALUE';
+    let dateTimeRenderOption = 'FORMATTED_STRING';
+
+    // Support both GET (query params) and POST (JSON body)
+    if (req.method === 'POST') {
+      const body = await req.json();
+      spreadsheetId = body.spreadsheetId;
+      range = body.range;
+      valueRenderOption = body.valueRenderOption || valueRenderOption;
+      dateTimeRenderOption = body.dateTimeRenderOption || dateTimeRenderOption;
+    } else {
+      const url = new URL(req.url);
+      spreadsheetId = url.searchParams.get('spreadsheetId');
+      range = url.searchParams.get('range');
+      valueRenderOption = url.searchParams.get('valueRenderOption') || valueRenderOption;
+      dateTimeRenderOption = url.searchParams.get('dateTimeRenderOption') || dateTimeRenderOption;
+    }
 
     if (!spreadsheetId || !range) {
       return new Response(
