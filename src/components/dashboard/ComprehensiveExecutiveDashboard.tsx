@@ -1438,18 +1438,8 @@ export const ComprehensiveExecutiveDashboard = React.memo(() => {
           </div>
         </div>
         
-        {/* Sales Table (Exportable) */}
-        <div className="mt-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-slate-900">Product & Category Metrics</h2>
-          </div>
+        {/* (Duplicate sales table removed) */}
 
-          <ProductCategoryMetricsTable
-            data={previousMonthData.sales || []}
-            filters={filters}
-          />
-        </div>
-        
         {/* Source Data Modal */}
         <SourceDataModal 
           open={showSourceData} 
