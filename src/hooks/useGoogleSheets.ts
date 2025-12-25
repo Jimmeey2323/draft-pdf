@@ -1,9 +1,10 @@
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SalesData } from '@/types/dashboard';
 import { requestCache } from '@/utils/performanceOptimizations';
-import { getGoogleAccessToken, parseNumericValue } from '@/utils/googleAuth';
+import { parseNumericValue } from '@/utils/googleAuth';
 import { createLogger } from '@/utils/logger';
+import { supabase } from '@/integrations/supabase/client';
 
 const logger = createLogger('useGoogleSheets');
 
@@ -30,24 +31,21 @@ export const useGoogleSheets = () => {
       
       // Use request cache to prevent duplicate requests
       const result = await requestCache.fetch('google-sheets-sales', async () => {
-        logger.info('Fetching sales data from Google Sheets...');
-        const accessToken = await getGoogleAccessToken();
+        logger.info('Fetching sales data via edge function...');
         
-        const response = await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sales?alt=json`,
-          {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-            },
-            signal: abortControllerRef.current?.signal,
+        const { data, error } = await supabase.functions.invoke('google-sheets', {
+          body: {
+            spreadsheetId: SPREADSHEET_ID,
+            range: 'Sales'
           }
-        );
+        });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
+        if (error) {
+          logger.error('Edge function error:', error);
+          throw new Error(error.message || 'Failed to fetch data');
         }
 
-        return response.json();
+        return data;
       });
       
       const rows = result.values || [];
