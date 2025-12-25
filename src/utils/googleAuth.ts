@@ -3,15 +3,13 @@
  * 
  * This module provides a single source of truth for Google API authentication,
  * with built-in rate limiting, caching, and error handling.
+ * 
+ * Uses Supabase Edge Function to securely handle Google OAuth credentials.
  */
 
-// Google OAuth Configuration from environment variables
-const GOOGLE_CONFIG = {
-  CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-  CLIENT_SECRET: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-  REFRESH_TOKEN: import.meta.env.VITE_GOOGLE_REFRESH_TOKEN || '',
-  TOKEN_URL: import.meta.env.VITE_GOOGLE_TOKEN_URL || 'https://oauth2.googleapis.com/token'
-};
+// Supabase configuration
+const SUPABASE_URL = 'https://oleiodivubhtcagrlfug.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sZWlvZGl2dWJodGNhZ3JsZnVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMTkxMjYsImV4cCI6MjA4MTU5NTEyNn0.QH_201DUxgNACmV9_48z1UUM5rFoy0-0yACIBBRkT2s';
 
 // Spreadsheet IDs
 export const SPREADSHEET_IDS = {
@@ -20,10 +18,6 @@ export const SPREADSHEET_IDS = {
   EXPIRATIONS: import.meta.env.VITE_EXPIRATIONS_SPREADSHEET_ID || '1rGMDDvvTbZfNg1dueWtRN3LhOgGQOdLg3Fd7Sn1GCZo',
   SALES: import.meta.env.VITE_SALES_SPREADSHEET_ID || '1HbGnJk-peffUp7XoXSlsL55924E9yUt8cP_h93cdTT0',
 };
-
-// Token cache
-let cachedToken: string | null = null;
-let tokenExpiry: number = 0;
 
 // Request queue for rate limiting
 interface QueuedRequest {
@@ -38,43 +32,13 @@ let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests (60/min limit)
 
 /**
- * Get a valid access token, using cache when possible
+ * Get a valid access token - now deprecated as edge function handles auth
+ * @deprecated Use edge function instead
  */
 export const getGoogleAccessToken = async (): Promise<string> => {
-  // Return cached token if still valid (with 5 minute buffer)
-  if (cachedToken && Date.now() < tokenExpiry - 300000) {
-    return cachedToken;
-  }
-
-  try {
-    const response = await fetch(GOOGLE_CONFIG.TOKEN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: GOOGLE_CONFIG.CLIENT_ID,
-        client_secret: GOOGLE_CONFIG.CLIENT_SECRET,
-        refresh_token: GOOGLE_CONFIG.REFRESH_TOKEN,
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Token refresh failed: ${response.status}`);
-    }
-
-    const tokenData = await response.json();
-    
-    // Cache the token (typically valid for 1 hour)
-    cachedToken = tokenData.access_token;
-    tokenExpiry = Date.now() + (tokenData.expires_in || 3600) * 1000;
-    
-    return cachedToken;
-  } catch (error) {
-    console.error('Error getting access token:', error);
-    throw error;
-  }
+  // This is now handled by the edge function
+  console.warn('getGoogleAccessToken is deprecated. Using edge function for Google Sheets access.');
+  return 'handled-by-edge-function';
 };
 
 /**
@@ -119,7 +83,7 @@ export const queueRequest = <T>(request: () => Promise<T>): Promise<T> => {
 };
 
 /**
- * Fetch data from a Google Sheet with rate limiting
+ * Fetch data from a Google Sheet via Supabase Edge Function
  */
 export const fetchGoogleSheet = async (
   spreadsheetId: string,
@@ -135,15 +99,16 @@ export const fetchGoogleSheet = async (
   } = options;
 
   return queueRequest(async () => {
-    const accessToken = await getGoogleAccessToken();
-    
-    const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`);
+    const url = new URL(`${SUPABASE_URL}/functions/v1/google-sheets`);
+    url.searchParams.set('spreadsheetId', spreadsheetId);
+    url.searchParams.set('range', range);
     url.searchParams.set('valueRenderOption', valueRenderOption);
     url.searchParams.set('dateTimeRenderOption', dateTimeRenderOption);
     
     const response = await fetch(url.toString(), {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY,
       },
     });
 
