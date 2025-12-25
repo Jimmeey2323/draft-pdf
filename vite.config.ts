@@ -2,6 +2,7 @@ import { defineConfig, type ViteDevServer } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+// @ts-ignore - Local API handler
 import notesHandler from "./api/notes.js";
 
 // https://vitejs.dev/config/
