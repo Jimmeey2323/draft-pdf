@@ -1,8 +1,43 @@
+## Universal Table Copy Functionality
+
+All metric tables now display a copy icon that opens a dropdown with:
+
+1. Copy with styling – rich HTML (keeps header + basic formatting)
+2. Copy as text – tab separated plain text for quick spreadsheet pasting
+3. Copy all tabs – aggregates every registered table in the current metrics context
+
+### How it works
+The app wraps pages in a `MetricsTablesRegistryProvider` (see `App.tsx`). Each table using `ModernTableWrapper`, `TableCard`, or the `useRegisterTableForCopy` hook auto-registers itself. The registry builds a unified export when "Copy all tabs" is chosen.
+
+### Adding to a custom table
+If you have a standalone table component:
+
+```tsx
+const ref = useRef<HTMLDivElement>(null);
+const { getAllTabsText } = useRegisterTableForCopy(ref, 'My Table Title');
+
+<div ref={ref}>
+	<CopyTableButton
+		tableRef={ref as any}
+		tableName="My Table Title"
+		onCopyAllTabs={async () => getAllTabsText()}
+	/>
+	{/* your <Table> ... */}
+</div>
+```
+
+No manual aggregation is required—registration handles it automatically.
+
+### Notes
+* Rich HTML copy falls back to plain text if the browser rejects `ClipboardItem`.
+* Auto-registration can be disabled per table via `disableAutoRegistry` on wrappers.
+* Each table is keyed by its title; ensure titles are unique within a page when using copy-all.
+
 # Welcome to your Lovable project
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/9567844f-8096-46ac-9a5f-6b0a7c656b9f
+**URL**: https://lovable.dev/projects/fd1ce843-6bed-47e6-bc6b-8589e9ca6a29
 
 ## How can I edit this code?
 
@@ -10,7 +45,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9567844f-8096-46ac-9a5f-6b0a7c656b9f) and start prompting.
+Simply visit the [Lovable Project](https://lovable.dev/projects/fd1ce843-6bed-47e6-bc6b-8589e9ca6a29) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
@@ -62,7 +97,7 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/9567844f-8096-46ac-9a5f-6b0a7c656b9f) and click on Share -> Publish.
+Simply open [Lovable](https://lovable.dev/projects/fd1ce843-6bed-47e6-bc6b-8589e9ca6a29) and click on Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 
@@ -70,4 +105,4 @@ Yes, you can!
 
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

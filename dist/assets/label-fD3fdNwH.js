@@ -1,0 +1,2 @@
+import{r,j as s,a4 as i,f as n,U as d}from"./index-Bm67KBkU.js";var f="Label",o=r.forwardRef((e,t)=>s.jsx(i.label,{...e,ref:t,onMouseDown:a=>{a.target.closest("button, input, select, textarea")||(e.onMouseDown?.(a),!a.defaultPrevented&&a.detail>1&&a.preventDefault())}}));o.displayName=f;var l=o;const c=d("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"),m=r.forwardRef(({className:e,...t},a)=>s.jsx(l,{ref:a,className:n(c(),e),...t}));m.displayName=l.displayName;export{m as L};
+//# sourceMappingURL=label-fD3fdNwH.js.map

@@ -1,0 +1,2 @@
+const e={card:{shadow:"shadow-[0_4px_20px_rgba(0,0,0,0.08)]",border:"border border-slate-200/60",background:"bg-white/95 backdrop-blur-md",radius:"rounded-2xl"},table:{header:"bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200",headerText:"text-xs font-bold text-slate-700 uppercase tracking-wider",row:"hover:bg-slate-50/80 transition-colors border-b border-slate-100",cell:"px-4 py-2 text-sm text-slate-800 font-medium whitespace-nowrap overflow-hidden text-ellipsis"}};export{e as d};
+//# sourceMappingURL=designTokens-CW6vZXXA.js.map
